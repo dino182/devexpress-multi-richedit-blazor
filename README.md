@@ -1,0 +1,1 @@
+This sample application demonstrates a bug when attempting to use multiple dynamic instances of a DevExpress RichEdit control on the same page.
