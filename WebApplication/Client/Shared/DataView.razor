@@ -1,0 +1,18 @@
+﻿<RichEdit @ref="@_richEdit"
+          @bind-DocumentBase64="@Model.DocumentContent"
+          DocumentName="@Model.DocumentName" />
+
+@code {
+    [Parameter]
+    public DataModel Model { get; set; }
+
+    public Task ExportDocumentContent() => _richEdit.ExportDocumentBase64();
+
+    private RichEdit _richEdit;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Model.Component = this;
+        base.OnAfterRender(firstRender);
+    }
+}

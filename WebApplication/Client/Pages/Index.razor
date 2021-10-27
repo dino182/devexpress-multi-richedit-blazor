@@ -1,3 +1,64 @@
 ﻿@page "/"
 
-<RichEdit DocumentName="Test" />
+<DxButton Text="Debug"
+          Click="@OnDebug"
+          RenderStyle="@ButtonRenderStyle.Primary" />
+
+@for (var i = 0; i < _dataModels.Count; i++)
+{
+    var index = i;
+
+    <div class="row">
+        <DataView Model="_dataModels[index]" />
+        <DxButton Text="Remove"
+                  Click="@(() => RemoveModel(index))"
+                  RenderStyle="@ButtonRenderStyle.Danger" />
+    </div>
+}
+
+<DxButton Text="Add"
+          Click="@AddModel"
+          RenderStyle="@ButtonRenderStyle.Primary" />
+
+@code {
+    private static int _count;
+
+    private readonly List<DataModel> _dataModels = new()
+    {
+        new DataModel { DocumentName = $"Test-{_count++}" },
+        new DataModel { DocumentName = $"Test-{_count++}" }
+    };
+
+    private void AddModel()
+    {
+        _dataModels.Add(new DataModel { DocumentName = $"Test-{_count++}" });
+    }
+
+    private async Task RemoveModel(int index)
+    {
+        _dataModels.RemoveAt(index);
+
+        // Force the remaining RichEdit controls to update their data bindings in preparation for re-rendering to new control instances
+        await RebindDocuments();
+    }
+
+    private async Task RebindDocuments()
+    {
+        // Force the RichEdit controls to update their data bindings
+        foreach (var model in _dataModels.Select(s => s.Component))
+        {
+            await model.ExportDocumentContent();
+        }
+    }
+
+    private async Task OnDebug()
+    {
+        // Update data bindings for all the RichEdit controls
+        await RebindDocuments();
+
+        foreach (var model in _dataModels)
+        {
+            Console.WriteLine($"{model.DocumentName}: {model.DocumentContent}");
+        }
+    }
+}
