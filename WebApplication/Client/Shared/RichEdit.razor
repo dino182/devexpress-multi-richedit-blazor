@@ -1,0 +1,65 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JsRuntime
+
+<div>
+    <div @ref="_richEditElement"></div>
+</div>
+
+@code {
+    [Parameter]
+    public string DocumentName { get; set; }
+
+    [Parameter]
+    public string DocumentBase64 { get; set; }
+
+    [Parameter]
+    public EventCallback<string> DocumentBase64Changed { get; set; }
+
+    private ElementReference _richEditElement;
+    private IJSObjectReference _jsModule;
+    private IJSObjectReference _jsRichEdit;
+    private bool _firstRenderComplete;
+    private string _previousDocumentBase64;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_previousDocumentBase64 != DocumentBase64)
+        {
+            if (_firstRenderComplete)
+                await SetDocumentBase64(DocumentBase64);
+            _previousDocumentBase64 = DocumentBase64;
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _jsModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./richedit.js");
+            _jsRichEdit = await _jsModule.InvokeAsync<IJSObjectReference>("create", _richEditElement, DocumentName, DocumentBase64);
+            _firstRenderComplete = true;
+        }
+    }
+
+    public async Task ExportDocumentBase64()
+    {
+        var base64 = await _jsModule.InvokeAsync<string>("exportToBase64", _jsRichEdit);
+        DocumentBase64 = base64;
+        await DocumentBase64Changed.InvokeAsync(base64);
+    }
+
+    private async Task SetDocumentBase64(string base64)
+    {
+        await _jsModule.InvokeVoidAsync("openDocument", _jsRichEdit, DocumentName, base64);
+        await DocumentBase64Changed.InvokeAsync(base64);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _jsModule.InvokeVoidAsync("dispose", _jsRichEdit);
+        await _jsRichEdit.DisposeAsync();
+        await _jsModule.DisposeAsync();
+    }
+}
