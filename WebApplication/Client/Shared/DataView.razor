@@ -9,10 +9,4 @@
     public Task ExportDocumentContent() => _richEdit.ExportDocumentBase64();
 
     private RichEdit _richEdit;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        Model.Component = this;
-        base.OnAfterRender(firstRender);
-    }
 }

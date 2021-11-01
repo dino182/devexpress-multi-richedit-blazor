@@ -5,7 +5,5 @@
         public string DocumentContent { get; set; }
 
         public string DocumentName { get; set; }
-
-        public DataView Component { get; set; }
     }
 }
