@@ -35,6 +35,13 @@
         await DocumentBase64Changed.InvokeAsync(base64);
     }
 
+    public async Task SetDocumentBase64(string base64 = null)
+    {
+        DocumentBase64 = base64;
+        await _jsModule.InvokeVoidAsync("openDocument", _jsRichEdit, DocumentName, base64);
+        await DocumentBase64Changed.InvokeAsync(base64);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _jsModule.InvokeVoidAsync("dispose", _jsRichEdit);

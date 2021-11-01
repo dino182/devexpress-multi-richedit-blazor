@@ -4,6 +4,10 @@
           Click="@OnDebug"
           RenderStyle="@ButtonRenderStyle.Primary" />
 
+<DxButton Text="Reload"
+          Click="@OnReload"
+          RenderStyle="@ButtonRenderStyle.Primary" />
+
 @foreach (var model in _dataModels)
 {
     <div class="row" @key="@model">
@@ -58,6 +62,14 @@
         foreach (var model in _dataModels)
         {
             Console.WriteLine($"{model.DocumentName}: {model.DocumentContent}");
+        }
+    }
+
+    private async Task OnReload()
+    {
+        foreach (var view in _dataViews.Values)
+        {
+            await view.ResetDocumentContent();
         }
     }
 }
