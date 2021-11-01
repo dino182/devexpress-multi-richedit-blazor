@@ -7,12 +7,8 @@
     public DataModel Model { get; set; }
 
     public Task ExportDocumentContent() => _richEdit.ExportDocumentBase64();
+    
+    public Task ResetDocumentContent() => _richEdit.SetDocumentBase64();
 
     private RichEdit _richEdit;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        Model.Component = this;
-        base.OnAfterRender(firstRender);
-    }
 }

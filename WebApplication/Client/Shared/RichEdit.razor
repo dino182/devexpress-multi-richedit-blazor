@@ -18,20 +18,6 @@
     private ElementReference _richEditElement;
     private IJSObjectReference _jsModule;
     private IJSObjectReference _jsRichEdit;
-    private bool _firstRenderComplete;
-    private string _previousDocumentBase64;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (_previousDocumentBase64 != DocumentBase64)
-        {
-            if (_firstRenderComplete)
-                await SetDocumentBase64(DocumentBase64);
-            _previousDocumentBase64 = DocumentBase64;
-        }
-
-        await base.OnParametersSetAsync();
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -39,7 +25,6 @@
         {
             _jsModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./richedit.js");
             _jsRichEdit = await _jsModule.InvokeAsync<IJSObjectReference>("create", _richEditElement, DocumentName, DocumentBase64);
-            _firstRenderComplete = true;
         }
     }
 
@@ -50,8 +35,9 @@
         await DocumentBase64Changed.InvokeAsync(base64);
     }
 
-    private async Task SetDocumentBase64(string base64)
+    public async Task SetDocumentBase64(string base64 = null)
     {
+        DocumentBase64 = base64;
         await _jsModule.InvokeVoidAsync("openDocument", _jsRichEdit, DocumentName, base64);
         await DocumentBase64Changed.InvokeAsync(base64);
     }

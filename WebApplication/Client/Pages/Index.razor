@@ -4,14 +4,17 @@
           Click="@OnDebug"
           RenderStyle="@ButtonRenderStyle.Primary" />
 
-@for (var i = 0; i < _dataModels.Count; i++)
-{
-    var index = i;
+<DxButton Text="Reload"
+          Click="@OnReload"
+          RenderStyle="@ButtonRenderStyle.Primary" />
 
-    <div class="row">
-        <DataView Model="_dataModels[index]" />
+@foreach (var model in _dataModels)
+{
+    <div class="row" @key="@model">
+        <DataView @ref="@_dataViews[model]"
+                  Model="@model" />
         <DxButton Text="Remove"
-                  Click="@(() => RemoveModel(index))"
+                  Click="@(() => RemoveModel(model))"
                   RenderStyle="@ButtonRenderStyle.Danger" />
     </div>
 }
@@ -29,25 +32,25 @@
         new DataModel { DocumentName = $"Test-{_count++}" }
     };
 
+    private readonly Dictionary<DataModel, DataView> _dataViews = new();
+
     private void AddModel()
     {
         _dataModels.Add(new DataModel { DocumentName = $"Test-{_count++}" });
     }
 
-    private async Task RemoveModel(int index)
+    private void RemoveModel(DataModel model)
     {
-        _dataModels.RemoveAt(index);
-
-        // Force the remaining RichEdit controls to update their data bindings in preparation for re-rendering to new control instances
-        await RebindDocuments();
+        _dataModels.Remove(model);
+        _dataViews.Remove(model);
     }
 
     private async Task RebindDocuments()
     {
         // Force the RichEdit controls to update their data bindings
-        foreach (var model in _dataModels.Select(s => s.Component))
+        foreach (var view in _dataViews.Values)
         {
-            await model.ExportDocumentContent();
+            await view.ExportDocumentContent();
         }
     }
 
@@ -59,6 +62,14 @@
         foreach (var model in _dataModels)
         {
             Console.WriteLine($"{model.DocumentName}: {model.DocumentContent}");
+        }
+    }
+
+    private async Task OnReload()
+    {
+        foreach (var view in _dataViews.Values)
+        {
+            await view.ResetDocumentContent();
         }
     }
 }
